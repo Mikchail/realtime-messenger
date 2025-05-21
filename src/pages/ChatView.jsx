@@ -9,13 +9,14 @@ import CreateChatModal from '../components/chat/CreateChatModal';
 import { useChatStore } from '../store/chatStore';
 import { useSocketStore } from '../store/socketStore';
 import { useAuthStore } from '../store/authStore';
+import { toast } from 'react-toastify';
 
 const ChatView = () => {
   const { chatId } = useParams();
   const navigate = useNavigate();
   const { user } = useAuthStore();
-  const { currentChat, messages, getMessages, sendMessage, deleteMessage, getChatById, clearCurrentChat } = useChatStore();
-  const { joinChat, markMessageRead, connected, initSocket, checkConnection } = useSocketStore();
+  const { currentChat, messages, getMessages, getChatById, clearCurrentChat, deleteMessage } = useChatStore();
+  const { joinChat, markMessageRead, connected, initSocket, checkConnection, sendMessage } = useSocketStore();
   const [isAddParticipantModalOpen, setIsAddParticipantModalOpen] = useState(false);
   const [authError, setAuthError] = useState(false);
   const [socketError, setSocketError] = useState(false);
@@ -109,15 +110,39 @@ const ChatView = () => {
   
   // Mark messages as read
   useEffect(() => {
-    if (messages.length > 0 && connected) {
-      messages.forEach(message => {
-        // If message is not from current user and has not been read by current user
-        if (message.sender?._id !== user?._id && 
-            message.readBy && 
-            !message.readBy.includes(user?._id)) {
-          markMessageRead(message._id);
+    if (messages.length > 0 && connected && user?._id) {
+      // Find all unread messages not sent by current user
+      const unreadMessages = messages.filter(message => {
+        // Skip messages sent by current user
+        if (message.sender?._id === user._id) {
+          return false;
         }
+        
+        // Check if message is already read by current user
+        if (message.readBy && Array.isArray(message.readBy)) {
+          // Check in readBy array (handling both string IDs and object IDs)
+          return !message.readBy.some(id => {
+            if (typeof id === 'string') {
+              return id === user._id;
+            } else if (id._id) {
+              return id._id === user._id;
+            }
+            return false;
+          });
+        }
+        
+        // If readBy doesn't exist or isn't an array, message is unread
+        return true;
       });
+      
+      if (unreadMessages.length > 0) {
+        console.log(`Marking ${unreadMessages.length} messages as read`);
+        
+        // Mark each message as read
+        unreadMessages.forEach(message => {
+          markMessageRead(message._id);
+        });
+      }
     }
   }, [messages, user, markMessageRead, connected]);
   
@@ -132,7 +157,7 @@ const ChatView = () => {
     try {
       console.log({chatId, text});
       
-      await sendMessage(chatId, text);
+      sendMessage(chatId, text);
     } catch (error) {
       console.error('Error sending message:', error);
     }

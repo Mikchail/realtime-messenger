@@ -41,17 +41,33 @@ const Message = ({ message, onDelete }) => {
   
   // Get read status
   const getReadStatus = () => {
-    if (!message.readBy || message.readBy.length === 0) {
+    if (!message.readBy || !Array.isArray(message.readBy)) {
       return 'Sent';
     }
     
-    // If all participants except sender have read the message
-    const participantCount = message.chat?.participants?.length || 2;
-    if (message.readBy.length >= participantCount) {
-      return 'Read by all';
+    // If message is from current user, show how many others have read it
+    if (isCurrentUserSender) {
+      // Filter out the sender from readBy
+      const readByOthers = message.readBy.filter(id => {
+        // Handle both string IDs and object IDs
+        if (typeof id === 'string') {
+          return id !== user?._id;
+        } else if (id._id) {
+          return id._id !== user?._id;
+        }
+        return false;
+      });
+      
+      if (readByOthers.length === 0) {
+        return 'Sent';
+      } else {
+        // For direct messages or when we don't know if it's a group
+        return 'Read';
+      }
     }
     
-    return `Read by ${message.readBy.length - 1}`; // Minus 1 because sender is always in readBy
+    // For messages from others, we don't show read status
+    return '';
   };
   
   return (
@@ -103,8 +119,16 @@ const Message = ({ message, onDelete }) => {
         `}>
           {timeString}
           {isCurrentUserSender && (
-            <span className="ml-2 flex items-center justify-end">
-              <CheckIcon className="w-3 h-3 mr-1" />
+            <span className={`ml-2 flex items-center justify-end ${
+              getReadStatus() === 'Read' || getReadStatus() === 'Read by all' 
+                ? 'text-green-500' 
+                : ''
+            }`}>
+              <CheckIcon className={`w-3 h-3 mr-1 ${
+                getReadStatus() === 'Read' || getReadStatus() === 'Read by all'
+                  ? 'text-green-500' 
+                  : 'text-gray-500'
+              }`} />
               {getReadStatus()}
             </span>
           )}

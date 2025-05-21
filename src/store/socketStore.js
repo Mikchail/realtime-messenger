@@ -109,10 +109,26 @@ export const useSocketStore = create((set, get) => ({
       }
       
       const updatedMessages = messages.map(message => {
-        if (message._id === messageId && message.readBy && !message.readBy.includes(userId)) {
+        if (message._id === messageId) {
+          // Initialize readBy array if it doesn't exist
+          const readBy = Array.isArray(message.readBy) ? [...message.readBy] : [];
+          
+          // Add userId to readBy if not already included
+          if (!readBy.some(id => {
+            // Handle both string IDs and object IDs
+            if (typeof id === 'string') {
+              return id === userId;
+            } else if (id._id) {
+              return id._id === userId;
+            }
+            return false;
+          })) {
+            readBy.push(userId);
+          }
+          
           return {
             ...message,
-            readBy: [...message.readBy, userId]
+            readBy
           };
         }
         return message;
@@ -195,8 +211,15 @@ export const useSocketStore = create((set, get) => ({
       return;
     }
     
-    console.log(`Marking message as read: ${messageId}`);
-    socket.emit('markAsRead', { messageId });
+    // Get current user ID from auth store
+    const userId = useAuthStore.getState().user?._id;
+    if (!userId) {
+      console.warn('Cannot mark message as read: User not authenticated');
+      return;
+    }
+    
+    console.log(`Marking message ${messageId} as read by user ${userId}`);
+    socket.emit('markAsRead', { messageId, userId });
   },
   
   // Check socket connection
