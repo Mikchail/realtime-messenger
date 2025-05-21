@@ -127,7 +127,7 @@ const ChatItem = ({ chat, isActive, unreadCount = 0 }) => {
             
             <div className="min-w-0 flex-1 px-4">
               <div className="flex items-center justify-between">
-                <p className="text-sm font-medium text-primary-600 dark:text-primary-400 truncate">
+                <p className="text-sm font-medium text-gray-100 dark:text-primary-400 truncate">
                   {getChatName()}
                 </p>
                 <p className="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap ml-2">

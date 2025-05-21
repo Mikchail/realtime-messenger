@@ -86,7 +86,7 @@ const MainLayout = ({ children }) => {
                   to={item.href}
                   className={`group flex items-center px-2 py-2 text-base font-medium rounded-md ${
                     item.active
-                      ? 'bg-primary-100 text-primary-900 dark:bg-primary-900 dark:text-primary-100'
+                      ? 'bg-primary-100 text-gray-500 dark:bg-primary-200 dark:text-primary-800'
                       : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white'
                   }`}
                 >
@@ -146,14 +146,14 @@ const MainLayout = ({ children }) => {
                     to={item.href}
                     className={`group flex items-center px-2 py-2 text-sm font-medium rounded-md ${
                       item.active
-                        ? 'bg-primary-100 text-primary-900 dark:bg-primary-900 dark:text-primary-100'
+                        ? 'bg-primary-100 text-gray-500 dark:bg-primary-900 dark:text-primary-100'
                         : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white'
                     }`}
                   >
                     <item.icon
                       className={`mr-3 h-5 w-5 ${
                         item.active
-                          ? 'text-primary-600 dark:text-primary-400'
+                          ? 'text-gray-500 dark:text-primary-400'
                           : 'text-gray-400 group-hover:text-gray-500 dark:text-gray-400 dark:group-hover:text-gray-300'
                       }`}
                       aria-hidden="true"
